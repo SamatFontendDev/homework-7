@@ -7,8 +7,61 @@ import { ADD_INGREDIENT } from '../actions/ingredients';
 // Обратите внимание на `orders.test.js`.
 // Он поможет понять, какие значения должен возвращать редьюсер.
 
+const positions = [
+  'clients',
+  'conveyor_1',
+  'conveyor_2',
+  'conveyor_3',
+  'conveyor_4',
+  'finish'
+];
+
+
 export default (state = [], action) => {
   switch (action.type) {
+    case 'CREATE_NEW_ORDER':
+    return [
+      ...state,
+      {
+        id: action.payload.id,
+        recipe:  [...action.payload.recipe],
+        ingredients: [],
+        position: 'clients'
+      }
+    ]
+    case 'MOVE_ORDER_NEXT':
+      return state.map(order => {
+        if (order.id === action.payload && order.position !== positions[positions.length - 1]) {
+            return {
+                ...order,
+                position: positions[positions.indexOf(order.position) + 1]
+            };
+        }
+        return order;
+    });
+    case 'MOVE_ORDER_BACK':
+        return state.map(order => {
+          if (order.id === action.payload && order.position !== positions[1]) {
+              return {
+                  ...order,
+                  position: positions[positions.indexOf(order.position) - 1]
+              };
+          }
+          return order;
+      });
+    case 'ADD_INGREDIENT':
+        return state.map(order => {
+          if (order.position === action.payload.from) {
+              order.recipe.map((product) => {
+                  if (product === action.payload.ingredient && !order.ingredients.includes(action.payload.ingredient)) {
+                      order.ingredients = [...order.ingredients, action.payload.ingredient];
+                      return order;
+                  }
+                  return order;
+              });
+          }
+          return order;
+      });
     default:
       return state;
   }
